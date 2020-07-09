@@ -133,10 +133,9 @@ user_type_data = (('College', "College"), ('Professor', "Professor"), ("Student"
 
 class User(AbstractUser):
     user_type=models.CharField(max_length=100,choices=user_type_data)
-    college=models.CharField(max_length=300,choices=collagelist)
     email = models.EmailField(verbose_name='email',max_length=255,unique=True)
 
-    REQUIRED_FIELDS = ['username','college','first_name','last_name','user_type']
+    REQUIRED_FIELDS = ['username','first_name','last_name','user_type','is_staff']
 
     USERNAME_FIELD = 'email'
 
@@ -145,13 +144,15 @@ class User(AbstractUser):
 
 
 class College(models.Model):
-    name = models.CharField(max_length=300,choices=collagelist,blank=False)
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='+')
     phone = PhoneNumberField(null=False, blank=False, unique=True)
-    password=models.CharField(max_length=20,blank=False)
+    college=models.CharField(max_length=300,choices=collagelist)
+    college_id=models.CharField(max_length=4,blank=False,unique=True)
+    city=models.CharField(max_length=100,blank=False)
     objects=models.Manager()
 
     def __str__(self):
-        return self.name
+        return self.user.username
 
 
 class Professors(models.Model):
@@ -172,7 +173,8 @@ class Professors(models.Model):
         ('Computer Sci.', 'Computer Sci.'),
 
     )
-    college = models.ForeignKey('College', related_name='professor', on_delete=models.CASCADE)
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='professors')
+    college=models.CharField(max_length=300,choices=collagelist)
     department = models.CharField(max_length=100, blank=False,choices=dept)
     phone = PhoneNumberField(null=False, blank=False, unique=True)
     role = models.CharField(max_length=20, choices=Professors_ROLE, default='Professor')
@@ -180,3 +182,43 @@ class Professors(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Students(models.Model):
+    sem = (
+        ('1', '1st'),
+        ('2', '2st'),
+        ('3', '3st'),
+        ('4', '4st'),
+        ('5', '5st'),
+        ('6', '6st'),
+        ('7', '7st'),
+        ('8', '8st'),
+    )
+
+    dept=(
+        ('Computer','Computer'),
+        ('Machenical', 'Mechenical'),
+        ('Electrical', 'Electrical'),
+        ('Civil', 'Civil'),
+        ('Aeronautical', 'Aeronautical'),
+        ('Information Technology','Information Technology'),
+        ('Electronics & Communication','Electronics & Communication'),
+        ('Automobile','Automobile'),
+        ('Biomedical','Biomedical'),
+        ('Computer Sci.','Computer Sci.'),
+
+    )
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='students')
+    college=models.CharField(max_length=300,choices=collagelist)
+    student_name = models.CharField(max_length=100, blank=False)
+    profile_pic=models.FileField()
+    enrollment = models.CharField(max_length=50,blank=False, unique=True)
+    semester = models.CharField(max_length=5,blank=False,choices=sem)
+    department = models.CharField(max_length=50,choices=dept,blank=False)
+    # bod=models.DateField(auto_now=True)
+    objects=models.Manager()
+
+    def __str__(self):
+        return self.name
+
